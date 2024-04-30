@@ -41,3 +41,17 @@ router.post('/books', (req, res) => {
   // Parse other details as needed
 });
 
+router.post('/books', (req, res) => {
+  const { title, author, ISBN } = req.body;
+
+  const insertQuery = `INSERT INTO books (title, author, ISBN) VALUES (?, ?, ?)`;
+  db.query(insertQuery, [title, author, ISBN], (err, result) => {
+    if (err) {
+      console.error('Error inserting new book:', err);
+      res.status(500).send('Error inserting new book');
+      return;
+    }
+    console.log('New book added to the database');
+    res.status(201).send('New book added successfully');
+  });
+});
