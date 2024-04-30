@@ -1,13 +1,8 @@
-
-// Import required modules
-const express = require('express');
+const http = require('http');
 const mysql = require('mysql');
 
-// Create Express application
-const app = express();
 const port = 3000;
 
-// MySQL database connection configuration
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'your_username',
@@ -15,7 +10,6 @@ const db = mysql.createConnection({
   database: 'library_db'
 });
 
-// Connect to MySQL database
 db.connect((err) => {
   if (err) {
     console.error('Error connecting to MySQL database: ', err);
@@ -24,34 +18,34 @@ db.connect((err) => {
   console.log('Connected to MySQL database');
 });
 
-// Define routes
-app.get('/', (req, res) => {
-  res.send('Welcome to the Library Management System!');
+const server = http.createServer((req, res) => {
+  if (req.method === 'POST' && req.url === '/books') {
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      const { title, author, ISBN } = JSON.parse(data);
+
+      const insertQuery = `INSERT INTO books (title, author, ISBN) VALUES (?, ?, ?)`;
+      db.query(insertQuery, [title, author, ISBN], (err, result) => {
+        if (err) {
+          console.error('Error inserting new book:', err);
+          res.writeHead(500, {'Content-Type': 'text/plain'});
+          res.end('Error inserting new book');
+          return;
+        }
+        console.log('New book added to the database');
+        res.writeHead(201, {'Content-Type': 'text/plain'});
+        res.end('New book added successfully');
+      });
+    });
+  } else {
+    res.writeHead(404, {'Content-Type': 'text/plain'});
+    res.end('404 Not Found');
+  }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${5500}`);
-});
-const express = require('express');
-const router = express.Router();
-router.post('/books', (req, res) => {
-  /router.post('/books', (req, res) => {
-  const { title, author, ISBN } = req.body;
-  // Parse other details as needed
-});
-
-router.post('/books', (req, res) => {
-  const { title, author, ISBN } = req.body;
-
-  const insertQuery = `INSERT INTO books (title, author, ISBN) VALUES (?, ?, ?)`;
-  db.query(insertQuery, [title, author, ISBN], (err, result) => {
-    if (err) {
-      console.error('Error inserting new book:', err);
-      res.status(500).send('Error inserting new book');
-      return;
-    }
-    console.log('New book added to the database');
-    res.status(201).send('New book added successfully');
-  });
+server.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
