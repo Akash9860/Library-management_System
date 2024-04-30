@@ -33,3 +33,11 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${5500}`);
 });
+const express = require('express');
+const router = express.Router();
+router.post('/books', (req, res) => {
+  /router.post('/books', (req, res) => {
+  const { title, author, ISBN } = req.body;
+  // Parse other details as needed
+});
+
